@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  web:
+    image: php:8.2-apache
+    container_name: lamp-web
+    volumes:
+      - ./html:/var/www/html
+    ports:
+      - "80:80"
+    depends_on:
+      - database
+    environment:
+      PMA_ARBITRARY: 1
+      PMA_HOST: database
+  database:
+    image: mariadb:11.1.2
+    container_name: lamp-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    volumes:
+      - ./db:/var/lib/mysql
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: database
+    ports:
+      - "8080:80"
+    depends_on:
+      - database
+    networks:
+      - phpmyadmin_net
+networks:
+  phpmyadmin_net:
