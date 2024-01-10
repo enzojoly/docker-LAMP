@@ -35,6 +35,7 @@
 
 	<div class="a">
     <h2>Project directory</h2>
+    <a href="assignment/twinCities.php">TWIN CITIES ASSIGNMENT</a><br>
     <a href="ws1/test.php">Test</a><br>
     <a href="ws2/calc.php">Calculator</a><br>
     <a href="ws3/append_csv.php">Appending CSV file using HTML form</a><br>
@@ -45,7 +46,6 @@
     <a href="ws8/8.php">ER Diagrams cont.</a><br>
     <a href="ws9/9.php">Twin Cities ER Models</a><br>
     <a href="ws10/10.php">Data Normalization Help@Home</a><br>
-    <a href="assignment/twinCities.php">ASSIGNMENT DRAFT</a><br>
 
 	</div>
 </body>
