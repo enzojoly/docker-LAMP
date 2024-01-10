@@ -1,0 +1,28 @@
+@startuml
+!theme plain
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+left to right direction
+
+entity "Booking" as booking {
+  *PK regno : int
+  --
+  *FK cno : int
+  bookingdate : date
+  service : int
+  service : varchar(50)
+  datereq : date
+  employee : varchar(50)
+  hours : int
+  payph(GBP) : int
+}
+
+entity "Customer" as customer {
+  *PK cno : int
+  --
+  cname : varchar(50)
+  tel : varchar(11)
+}
+
+booking ||--|| customer
+@enduml

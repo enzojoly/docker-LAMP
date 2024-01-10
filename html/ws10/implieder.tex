@@ -1,0 +1,54 @@
+@startuml
+!theme plain
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+left to right direction
+
+entity "Bus" as bus {
+  *PK regNo : int
+  --
+  *FK cno : int
+  *FK dno : int
+  *FK tno : int
+  --
+  model : varchar
+}
+
+entity "Cleaner" as cleaner {
+  *PK cno : int
+  --
+  cname : varchar
+}
+
+entity "Depot" as depot {
+  *PK dno : int
+  --
+  dname : varchar
+}
+
+entity "BusType" as bustype {
+  *PK tno : int
+  --
+  tdescript : varchar
+}
+
+entity "Bus-cleaning" as buscleaning {
+  *PK rosterNo : int
+  *PK regNo : int
+  --
+  status : varchar
+}
+
+entity "Roster" as roster {
+  *PK rosterNo : int
+  --
+  rosterDate : date
+}
+
+bus ||--|| bustype
+depot ||--o{ bus
+bus ||--o{ buscleaning
+roster ||--o{ buscleaning
+cleaner ||--o{ bus
+
+@enduml

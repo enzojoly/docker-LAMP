@@ -1,0 +1,37 @@
+@startuml
+!theme plain
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+left to right direction
+
+entity "Quote" as quote {
+  *quote_id : integer
+  --
+  quote : text
+}
+
+entity "Source" as source {
+  *source_id : integer
+  --
+  source : text
+  dob-dod : text
+  wplink : text
+  wpimg : text
+}
+
+entity "Category" as category {
+  *category_id : integer
+  --
+  category : text
+}
+
+entity "QuoteCategory" as quotecategory {
+  *quote_id : integer
+  *category_id : integer
+  --
+}
+
+quote ||--|| source : "has"
+quote ||--o{ quotecategory
+category ||--o{ quotecategory
+@enduml

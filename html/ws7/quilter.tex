@@ -1,0 +1,41 @@
+@startuml
+!theme plain
+
+entity Quilt {
+  + id: int
+  + name: string
+  + size: string
+  + area: float
+  + story: text
+  + forSale: boolean
+}
+
+entity Photograph {
+  + id: int
+  + quiltId: int
+  + imageUrl: string
+  + description: text
+}
+
+entity Person {
+  + id: int
+  + name: string
+  + email: string
+  + websiteUrl: string
+  + story: text
+}
+
+entity Comment {
+  + id: int
+  + quiltId: int
+  + memberId: int
+  + content: text
+  + language: string
+  + timestamp: datetime
+}
+
+Quilt ||--o{ Photograph : contains
+Quilt ||--o{ Person : made by
+Quilt ||--o{ Comment : has
+Person ||--o{ Comment : posts
+@enduml

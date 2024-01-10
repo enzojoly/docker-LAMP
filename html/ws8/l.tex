@@ -1,0 +1,27 @@
+@startuml
+!theme plain
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+left to right direction
+
+entity "Book" as book {
+  *book_id : integer
+  title : string
+  publication_year : integer
+}
+
+entity "Authorship" as authorship {
+  *authorship_id : integer
+  *book_id : integer
+  *author_id : integer
+}
+
+entity "Author" as author {
+  *author_id : integer
+  name : string
+  birth_year : integer
+}
+
+book ||--o{ authorship : "comprises"
+authorship }o--|| author : "attributed to"
+@enduml

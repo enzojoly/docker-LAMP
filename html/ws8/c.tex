@@ -1,0 +1,14 @@
+@startuml
+!theme plain
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+left to right direction
+
+entity "Author" as author {
+}
+
+entity "Book" as book {
+}
+
+book }|--|{ author : "has an"
+@enduml

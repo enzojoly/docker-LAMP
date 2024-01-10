@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   web:
-    image: php:8.2-apache
+    build: .
     container_name: lamp-web
     volumes:
       - ./html:/var/www/html
@@ -12,14 +12,19 @@ services:
     environment:
       PMA_ARBITRARY: 1
       PMA_HOST: database
+    networks:
+      - phpmyadmin_net
+
   database:
-    image: mariadb:11.1.2
+    image: mariadb
     container_name: lamp-db
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: zebra
     volumes:
-      - ./db:/var/lib/mysql
+      - ./twin_db:/var/lib/mysql
+    networks:
+      - phpmyadmin_net
+
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin
@@ -31,5 +36,6 @@ services:
       - database
     networks:
       - phpmyadmin_net
+
 networks:
   phpmyadmin_net:
