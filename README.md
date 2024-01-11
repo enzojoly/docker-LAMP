@@ -9,7 +9,7 @@ experiment running a LAMP-stack with docker
 5. 'docker exec -it lamp-db mariadb -u root - p' and enter password
 
 ## Twin Cities Logical Diagram
-![Entity relationship diagram](TwinCitiesDiagram.png)
+![Entity relationship diagram](readmepng/TwinCitiesDiagram.png)
 
-## Twin Cities Map API, MouseOver, Icons (draw from db)
-![MouseOver](MouseOver.png)
+## Twin Cities Map API with Icons, MouseOver Event (from db)
+![MouseOver](readmepng/MouseOver.png)

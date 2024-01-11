@@ -2,7 +2,7 @@ version: '3.8'
 services:
   web:
     build: .
-    container_name: lamp-web
+    container_name: LAMP-web
     volumes:
       - ./html:/var/www/html
     ports:
@@ -17,7 +17,7 @@ services:
 
   database:
     image: mariadb
-    container_name: lamp-db
+    container_name: LAMP-db
     environment:
       MYSQL_ROOT_PASSWORD: zebra
     volumes:
@@ -27,7 +27,7 @@ services:
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
-    container_name: phpmyadmin
+    container_name: PHPmyadmin
     environment:
       PMA_HOST: database
     ports:
