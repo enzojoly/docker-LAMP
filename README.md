@@ -9,4 +9,4 @@ experiment running a LAMP-stack with docker
 5. 'docker exec -it lamp-db mariadb -u root - p' and enter password
 
 ## Twin Cities Logical Diagram
-[![Entity relationship diagram](TwinCitiesDiagram.png)]
+![Entity relationship diagram](TwinCitiesDiagram.png)
