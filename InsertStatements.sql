@@ -1,3 +1,7 @@
+CREATE DATABASE twin_cities;
+
+source /init-db-twin.sql
+
 INSERT INTO `Cities` (`CurrencyID`, `Name`, `Population`, `CountryID`, `Mayor`, `YearFounded`, `Latitude`, `Longitude`) VALUES
 ('GBP', 'Liverpool', 917000, 'GBR', 'Steve Rotheram', '1207', 53.397300, -2.973200),
 ('EUR', 'Cologne', 1144000, 'DEU', 'Henriette Reker', '38 BC', 50.941300, 6.958300);
@@ -12,15 +16,15 @@ INSERT INTO `Weather` (`CityID`, `Temperature`, `Humidity`, `WindSpeed`, `WindDi
 
 INSERT INTO `Category` (`CategoryName`, `IconURL`) VALUES
 ('Botanical Garden', './icons/botanicalGarden.png'),
-('Bridge', './icons/bridge.png'),
+('Park', './icons/park.png'),
 ('Entertainment', './icons/entertainment.png'),
 ('Museum', './icons/museum.png'),
-('Park', './icons/park.png'),
 ('Popular', './icons/popular.png'),
+('Bridge', './icons/bridge.png'),
 ('Shopping', './icons/shopping.png'),
 ('Zoo', './icons/zoo.png');
 
-INSERT INTO `Place_Category` (`PlaceID`, `CategoryID`) VALUES (3, 6), (4, 6), (5, 6), (5, 7), (6, 4), (7, 5), (8, 4), (8, 6), (9, 5), (10, 4), (11, 4), (12, 3), (13, 7), (14, 5), (15, 6), (16, 4), (17, 4), (18, 6), (18, 8), (19, 3), (20, 5), (21, 2), (22, 6), (22, 7), (23, 1), (24, 7), (25, 7), (26, 5);
+INSERT INTO `Place_Category` (`PlaceID`, `CategoryID`) VALUES (1, 5), (2, 5), (3, 5), (3, 7), (4, 4), (5, 2), (6, 4), (6, 5), (7, 2), (8, 4), (9, 4), (10, 3), (11, 7), (12, 2), (13, 5), (14, 4), (15, 4), (16, 5), (16, 8), (17, 3), (18, 2),(19, 5), (19, 6), (20, 5), (20, 7), (21, 1), (22, 7), (23, 7), (24, 2);
 
 INSERT INTO `Places_of_Interest` (`CityID`, `Name`, `Type`, `Capacity`, `Photos_Flickr_API`, `OpeningHours`, `Description`, `Latitude`, `Longitude`) VALUES
 (1, 'Liverpool Cathedral', 'Popular', NULL, NULL, '0900-1800', 'A historical cathedral in Liverpool', 53.397300, -2.973200),
