@@ -59,7 +59,51 @@
         .info-bubble p {
             margin: 5px 0;
 	}
-
+        .forecast-container {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            flex-wrap: wrap;
+        }
+        .forecast {
+            border: 1px solid #ddd;
+            padding: 10px;
+            width: 45%;
+            margin-bottom: 20px;
+            background-color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .day-label {
+            background-color: #e7e7e7;
+            padding: 5px;
+            font-weight: bold;
+        }
+        a {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #333;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        a:hover {
+            background-color: #555;
+        }
     </style>
 </head>
 <body>
@@ -183,11 +227,101 @@
 		src="https://maps.googleapis.com/maps/api/js?key=<?php echo GOOGLE_MAPS_API_KEY; ?>&callback=initMap">
 	</script>
 
-	<!-- Debugging: Print the variables -->
+<!--
+	 Debugging: Print the variables
 	<div style="text-align: left; margin-top: 20px;">
 		<h3>Debugging Information:</h3>
-		<pre>Map Centers: <?php echo htmlspecialchars(json_encode($mapCenters, JSON_PRETTY_PRINT)); ?></pre>
-		<pre>Places: <?php echo htmlspecialchars(json_encode($places, JSON_PRETTY_PRINT)); ?></pre>
+		<pre>Map Centers: <?php // echo htmlspecialchars(json_encode($mapCenters, JSON_PRETTY_PRINT)); ?></pre>
+		<pre>Places: <?php // echo htmlspecialchars(json_encode($places, JSON_PRETTY_PRINT)); ?></pre>
 	</div>
+-->
+
+    <?php
+        function getWeatherForecast($city) {
+	    $forecastUrl = "http://api.openweathermap.org/data/2.5/forecast?q={$city}&units=metric&appid=" . OPENWEATHERMAP_API_KEY;
+            $forecastJson = file_get_contents($forecastUrl);
+            $forecastData = json_decode($forecastJson);
+
+            $forecasts = [];
+            foreach ($forecastData->list as $forecast) {
+                $date = new DateTime($forecast->dt_txt);
+                $hour = $date->format('H');
+
+                if ($hour == '12' || $hour == '00') {
+                    $dayOfWeek = $date->format('l');
+                    $forecasts[$dayOfWeek][] = [
+                        'date' => $date->format('Y-m-d H:i'),
+                        'temp' => round($forecast->main->temp, 1) . '°C',
+                        'condition' => $forecast->weather[0]->main,
+                        'wind' => $forecast->wind->speed . ' m/s',
+                        'humidity' => $forecast->main->humidity . '%',
+                        'pressure' => $forecast->main->pressure . ' hPa'
+                    ];
+                }
+            }
+
+            return $forecasts;
+        }
+
+        $liverpoolWeather = getWeatherForecast('Liverpool');
+        $cologneWeather = getWeatherForecast('Cologne');
+    ?>
+
+    <div class="forecast-container">
+        <div class="forecast">
+            <h2>Liverpool Weather Forecast</h2>
+            <?php foreach ($liverpoolWeather as $day => $forecasts): ?>
+                <div class="day-label"><?= $day ?></div>
+                <table>
+                    <tr>
+                        <th>Date/Time</th>
+                        <th>Condition</th>
+                        <th>Temperature</th>
+                        <th>Wind</th>
+                        <th>Humidity</th>
+                        <th>Pressure</th>
+                    </tr>
+                    <?php foreach ($forecasts as $forecast): ?>
+                        <tr>
+                            <td><?= $forecast['date'] ?></td>
+                            <td><?= $forecast['condition'] ?></td>
+                            <td><?= $forecast['temp'] ?></td>
+                            <td><?= $forecast['wind'] ?></td>
+                            <td><?= $forecast['humidity'] ?></td>
+                            <td><?= $forecast['pressure'] ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </table>
+            <?php endforeach; ?>
+        </div>
+
+        <div class="forecast">
+            <h2>Cologne Weather Forecast</h2>
+            <?php foreach ($cologneWeather as $day => $forecasts): ?>
+                <div class="day-label"><?= $day ?></div>
+                <table>
+                    <tr>
+                        <th>Date/Time</th>
+                        <th>Condition</th>
+                        <th>Temperature</th>
+                        <th>Wind</th>
+                        <th>Humidity</th>
+                        <th>Pressure</th>
+                    </tr>
+                    <?php foreach ($forecasts as $forecast): ?>
+                        <tr>
+                            <td><?= $forecast['date'] ?></td>
+                            <td><?= $forecast['condition'] ?></td>
+                            <td><?= $forecast['temp'] ?></td>
+                            <td><?= $forecast['wind'] ?></td>
+                            <td><?= $forecast['humidity'] ?></td>
+                            <td><?= $forecast['pressure'] ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </table>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
 </body>
 </html>
