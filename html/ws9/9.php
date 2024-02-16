@@ -55,10 +55,10 @@
             <h1>Twin Cities Entity Relationship Diagrams</h1>
 
             <h2>Conceptual model</h2>
-            <img src="conceptual.png" alt="concept" class="conceptual-model"> <br>
+            <img src="condiagram.png" alt="concept" class="conceptual-model"> <br>
 
             <h2>Logical model</h2>
-            <img src="logicald.png" alt="logical" class="logical-model">
+            <img src="logdiagram.png" alt="logical" class="logical-model">
 
             <a href="../index.php">Back to home</a>
         </div>

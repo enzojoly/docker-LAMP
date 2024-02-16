@@ -9,7 +9,41 @@
             color: #333;
             text-align: center;
 	}
+	.forecast-container {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            flex-wrap: wrap;
+            gap: 20px; /* This will create a gap between the two tables */
+            align-items: flex-start; /* Align tables to the top */
+        }
 
+        .forecast {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 20px;
+            background-color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            flex: 1; /* Each table will take up equal space */
+            max-width: calc(50% - 20px); /* Subtract the gap from the 50% width */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed; /* This will prevent the table from expanding beyond its container */
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            word-wrap: break-word; /* Ensures text wraps and doesn't overflow */
+	}
+	th {
+	    background-color: #f2f2f2;
+	}
         .map-container {
             display: flex;
             justify-content: space-around;
@@ -59,34 +93,6 @@
         .info-bubble p {
             margin: 5px 0;
 	}
-        .forecast-container {
-            display: flex;
-            justify-content: space-around;
-            padding: 20px;
-            flex-wrap: wrap;
-        }
-        .forecast {
-            border: 1px solid #ddd;
-            padding: 10px;
-            width: 45%;
-            margin-bottom: 20px;
-            background-color: white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border-radius: 5px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
         .day-label {
             background-color: #e7e7e7;
             padding: 5px;
@@ -131,12 +137,12 @@
 	}
 
     	// Fetch map centers
-	$mapCentersSql = "SELECT Name, Latitude, Longitude FROM Cities WHERE Name IN ('Liverpool', 'Cologne')";
+	$mapCentersSql = "SELECT CityName, Latitude, Longitude FROM Cities WHERE CityName IN ('Liverpool', 'Cologne')";
     	$mapCentersResult = $conn->query($mapCentersSql);
     	$mapCenters = [];
 
 	while($row = $mapCentersResult->fetch_assoc()) {
-        	$mapCenters[$row['Name']] = $row;
+        	$mapCenters[$row['CityName']] = $row;
     	}
 
 	$placesSql = "SELECT p.PlaceID, p.CityID, p.Name, p.Type, p.OpeningHours, p.Description, p.Latitude, p.Longitude,
@@ -154,7 +160,6 @@
         	$places[] = $row;
     	}
 
-    	$conn->close();
   ?>
 
 
@@ -235,93 +240,204 @@
 		<pre>Places: <?php // echo htmlspecialchars(json_encode($places, JSON_PRETTY_PRINT)); ?></pre>
 	</div>
 -->
+<?php
 
-    <?php
-        function getWeatherForecast($city) {
-	    $forecastUrl = "http://api.openweathermap.org/data/2.5/forecast?q={$city}&units=metric&appid=" . OPENWEATHERMAP_API_KEY;
-            $forecastJson = file_get_contents($forecastUrl);
-            $forecastData = json_decode($forecastJson);
+// Function to fetch weather forecast data from the API
+function getWeatherForecast($city, $appid) {
+    $forecastUrl = "http://api.openweathermap.org/data/2.5/forecast?q={$city}&units=metric&appid={$appid}";
+    $forecastJson = file_get_contents($forecastUrl);
+    return json_decode($forecastJson, true); // Return as an associative array
+}
 
-            $forecasts = [];
-            foreach ($forecastData->list as $forecast) {
-                $date = new DateTime($forecast->dt_txt);
-                $hour = $date->format('H');
+// Function to update the Weather table with the latest weather forecast data
+function updateWeatherData($conn, $city, $appid) {
+    // Get the weather forecast data
+    $forecastData = getWeatherForecast($city, $appid);
 
-                if ($hour == '12' || $hour == '00') {
-                    $dayOfWeek = $date->format('l');
-                    $forecasts[$dayOfWeek][] = [
-                        'date' => $date->format('Y-m-d H:i'),
-                        'temp' => round($forecast->main->temp, 1) . '°C',
-                        'condition' => $forecast->weather[0]->main,
-                        'wind' => $forecast->wind->speed . ' m/s',
-                        'humidity' => $forecast->main->humidity . '%',
-                        'pressure' => $forecast->main->pressure . ' hPa'
-                    ];
-                }
-            }
+    // Check if the forecast data is available
+    if (!$forecastData || !isset($forecastData['list'])) {
+        return; // Forecast data not available, so return early
+    }
 
-            return $forecasts;
+    // Truncate the Weather table to remove old data
+    $conn->query("DELETE FROM Weather WHERE CityID = (SELECT CityID FROM Cities WHERE CityName = '{$city}')");
+
+    // Iterate over the forecasts and add them to the database
+    foreach ($forecastData['list'] as $forecast) {
+        $date = new DateTime($forecast['dt_txt']);
+        $hour = $date->format('H');
+	// Hourly forecast for todays date
+	if ($date->format('Y-m-d') === date('Y-m-d') && $hour != '12' /* prevent duplicate*/) {
+	    $stmt = $conn->prepare("INSERT INTO Weather (CityID, Temperature, Humidity, WindSpeed, `Condition`, Pressure, ForecastTime)
+				   VALUES ((SELECT CityID FROM Cities WHERE CityName = ?), ?, ?, ?, ?, ?, ?)");
+	    $stmt->bind_param("sdddsds",
+		$city,
+		$forecast['main']['temp'],
+		$forecast['main']['humidity'],
+		$forecast['wind']['speed'],
+		$forecast['weather'][0]['main'],
+		$forecast['main']['pressure'],
+		$forecast['dt_txt']
+	    );
+	    $stmt->execute();
+	    $stmt->close();
+	}
+
+        // Only insert data for midday and midnight forecasts for rest of the week
+        if ($hour === '12' || $hour === '00') {
+            $stmt = $conn->prepare("INSERT INTO Weather (CityID, Temperature, Humidity, WindSpeed, `Condition`, Pressure, ForecastTime)
+                                     VALUES ((SELECT CityID FROM Cities WHERE CityName = ?), ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("sdddsds",
+                $city,
+                $forecast['main']['temp'],
+                $forecast['main']['humidity'],
+                $forecast['wind']['speed'],
+                $forecast['weather'][0]['main'],
+                $forecast['main']['pressure'],
+                $forecast['dt_txt']
+            );
+            $stmt->execute();
+            $stmt->close();
         }
+    }
+}
 
-        $liverpoolWeather = getWeatherForecast('Liverpool');
-        $cologneWeather = getWeatherForecast('Cologne');
-    ?>
+// Function to display the weather forecasts
+function displayWeatherForecasts($conn) {
+    // Fetch all city names and their IDs
+    $citiesResult = $conn->query("SELECT CityID, CityName FROM Cities ORDER BY CityID ASC");
 
-    <div class="forecast-container">
-        <div class="forecast">
-            <h2>Liverpool Weather Forecast</h2>
-            <?php foreach ($liverpoolWeather as $day => $forecasts): ?>
-                <div class="day-label"><?= $day ?></div>
-                <table>
-                    <tr>
-                        <th>Date/Time</th>
-                        <th>Condition</th>
-                        <th>Temperature</th>
-                        <th>Wind</th>
-                        <th>Humidity</th>
-                        <th>Pressure</th>
-                    </tr>
-                    <?php foreach ($forecasts as $forecast): ?>
-                        <tr>
-                            <td><?= $forecast['date'] ?></td>
-                            <td><?= $forecast['condition'] ?></td>
-                            <td><?= $forecast['temp'] ?></td>
-                            <td><?= $forecast['wind'] ?></td>
-                            <td><?= $forecast['humidity'] ?></td>
-                            <td><?= $forecast['pressure'] ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </table>
-            <?php endforeach; ?>
-        </div>
+    // Iterate over each city and display its weather forecast
+    while ($city = $citiesResult->fetch_assoc()) {
+        $weatherResult = $conn->query("SELECT Temperature, Humidity, WindSpeed, `Condition`, Pressure, ForecastTime
+                                       FROM Weather WHERE CityID = {$city['CityID']}");
 
-        <div class="forecast">
-            <h2>Cologne Weather Forecast</h2>
-            <?php foreach ($cologneWeather as $day => $forecasts): ?>
-                <div class="day-label"><?= $day ?></div>
-                <table>
-                    <tr>
-                        <th>Date/Time</th>
-                        <th>Condition</th>
-                        <th>Temperature</th>
-                        <th>Wind</th>
-                        <th>Humidity</th>
-                        <th>Pressure</th>
-                    </tr>
-                    <?php foreach ($forecasts as $forecast): ?>
-                        <tr>
-                            <td><?= $forecast['date'] ?></td>
-                            <td><?= $forecast['condition'] ?></td>
-                            <td><?= $forecast['temp'] ?></td>
-                            <td><?= $forecast['wind'] ?></td>
-                            <td><?= $forecast['humidity'] ?></td>
-                            <td><?= $forecast['pressure'] ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </table>
-            <?php endforeach; ?>
-        </div>
-    </div>
+        echo "<h2>{$city['CityName']} Weather Forecast</h2>";
+        echo "<table border='1'>";
+        echo "<tr><th>Date/Time</th><th>Condition</th><th>Temperature</th><th>Wind</th><th>Humidity</th><th>Pressure</th></tr>";
+
+        // Iterate over each forecast entry and display it
+        while ($weatherRow = $weatherResult->fetch_assoc()) {
+            echo "<tr>";
+            echo "<td>" . htmlspecialchars($weatherRow['ForecastTime']) . "</td>";
+            echo "<td>" . htmlspecialchars($weatherRow['Condition']) . "</td>";
+            echo "<td>" . htmlspecialchars($weatherRow['Temperature']) . "°C</td>";
+            echo "<td>" . htmlspecialchars($weatherRow['WindSpeed']) . " m/s</td>";
+            echo "<td>" . htmlspecialchars($weatherRow['Humidity']) . "%</td>";
+            echo "<td>" . htmlspecialchars($weatherRow['Pressure']) . " hPa</td>";
+            echo "</tr>";
+        }
+        echo "</table><br>"; // Close the table and add a break for spacing
+    }
+}
+
+// Establish a new database connection
+$conn = new mysqli(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_NAME);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Update weather data for each city
+updateWeatherData($conn, 'Liverpool', OPENWEATHERMAP_API_KEY);
+updateWeatherData($conn, 'Cologne', OPENWEATHERMAP_API_KEY);
+
+// Display the weather forecasts
+displayWeatherForecasts($conn);
+
+function fetchNewsForCity($city, $apiKey) {
+    $yesterday = date('Y-m-d', strtotime('-1 day'));
+    $twentyEightDaysAgo = date('Y-m-d', strtotime('-28 days'));
+    $apiUrl = "https://newsapi.org/v2/everything?q=" . urlencode($city) . "&from={$twentyEightDaysAgo}&to={$yesterday}&apiKey={$apiKey}";
+
+    // Initialize cURL session
+    $curl = curl_init($apiUrl);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    // Set User-Agent header
+    curl_setopt($curl, CURLOPT_HTTPHEADER, [
+        'Accept: application/json',
+        'User-Agent: Twin Cities Application' // requiring user agent - terms of API
+    ]);
+
+    // Execute cURL session
+    $responseJson = curl_exec($curl);
+    $err = curl_error($curl);
+    $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+    curl_close($curl);
+
+    // Check if an error occurred
+    if ($err) {
+        echo "cURL Error #: " . $err;
+        return [];
+    } elseif ($httpcode != 200) {
+        // Handle HTTP error (e.g., rate limits exceeded, bad request)
+        echo "HTTP Error #: " . $httpcode;
+        return [];
+    } else {
+        $response = json_decode($responseJson, true);
+        return $response['articles'] ?? [];
+    }
+}
+
+function updateNewsData($conn, $city, $newsItems) {
+    // Clear previous news for the city
+    $deleteStmt = $conn->prepare("DELETE FROM News WHERE CityName = ?");
+    $deleteStmt->bind_param("s", $city);
+    $deleteStmt->execute();
+    $deleteStmt->close();
+
+    foreach ($newsItems as $item) {
+        // Convert date to MySQL datetime format
+        $pubDate = new DateTime($item['publishedAt']);
+        $formattedPubDate = $pubDate->format('Y-m-d H:i:s');
+
+        $insertStmt = $conn->prepare("INSERT INTO News (CityName, Title, PubDate, Link) VALUES (?, ?, ?, ?)");
+        $insertStmt->bind_param("ssss", $city, $item['title'], $formattedPubDate, $item['url']);
+        $insertStmt->execute();
+        $insertStmt->close();
+    }
+}
+
+function displayNews($conn) {
+    $cities = ['Liverpool', 'Cologne'];
+    foreach ($cities as $city) {
+        $newsResult = $conn->prepare("SELECT Title, PubDate, Link FROM News WHERE CityName = ? ORDER BY PubDate DESC");
+        $newsResult->bind_param("s", $city);
+        $newsResult->execute();
+        $result = $newsResult->get_result();
+
+        echo "<h2>{$city} News</h2>";
+        echo "<table border='1'><tr><th>Title</th><th>Date</th><th>Link</th></tr>";
+        while ($row = $result->fetch_assoc()) {
+            echo "<tr>";
+            echo "<td>" . htmlspecialchars($row['Title']) . "</td>";
+            echo "<td>" . htmlspecialchars($row['PubDate']) . "</td>";
+            echo "<td><a href='" . htmlspecialchars($row['Link']) . "'>Read more</a></td>";
+            echo "</tr>";
+        }
+        echo "</table><br>";
+        $newsResult->close();
+    }
+}
+
+// Fetch news for each city
+$liverpoolNews = fetchNewsForCity('Liverpool', NEWSAPI_API_KEY);
+$cologneNews = fetchNewsForCity('Cologne', NEWSAPI_API_KEY);
+
+// Insert news data into the database
+updateNewsData($conn, 'Liverpool', $liverpoolNews);
+updateNewsData($conn, 'Cologne', $cologneNews);
+
+// Display the news
+displayNews($conn);
+
+
+$conn->close();
+
+?>
+
 
 </body>
 </html>
