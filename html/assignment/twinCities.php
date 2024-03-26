@@ -6,8 +6,7 @@
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
-            color: #333;
-            text-align: center;
+            color: #333; text-align: center;
 	}
 	.forecast-container {
             display: flex;
@@ -383,10 +382,18 @@ function fetchNewsForCity($city, $apiKey) {
 
 function updateNewsData($conn, $city, $newsItems) {
     // Clear previous news for the city
-    $deleteStmt = $conn->prepare("DELETE FROM News WHERE CityName = ?");
-    $deleteStmt->bind_param("s", $city);
-    $deleteStmt->execute();
-    $deleteStmt->close();
+    // Delete news more than two weeks old from each News table
+    $twoWeeksAgo = date('Y-m-d', strtotime('-2 weeks'));
+    $deleteOldNewsStmt = $conn->prepare("DELETE FROM News WHERE CityName = ? AND PubDate < ?");
+    $deleteOldNewsStmt->bind_param("ss", $city, $twoWeeksAgo);
+    $deleteOldNewsStmt->execute();
+    $deleteOldNewsStmt->close();
+
+    //Ensure no duplicate articles within 2 weeks
+    $lastTwoWeeksStmt = $conn->prepare("DELETE FROM News WHERE CityName = ? AND PubDate >= ?");
+    $lastTwoWeeksStmt->bind_param("ss", $city, $twoWeeksAgo);
+    $lastTwoWeeksStmt->execute();
+    $lastTwoWeeksStmt->close();
 
     foreach ($newsItems as $item) {
         // Convert date to MySQL datetime format
@@ -403,8 +410,31 @@ function updateNewsData($conn, $city, $newsItems) {
 function displayNews($conn) {
     $cities = ['Liverpool', 'Cologne'];
     foreach ($cities as $city) {
-        $newsResult = $conn->prepare("SELECT Title, PubDate, Link FROM News WHERE CityName = ? ORDER BY PubDate DESC");
-        $newsResult->bind_param("s", $city);
+        // Get the start date of the current week
+        $startOfWeek = date('Y-m-d', strtotime('monday last week'));
+
+        // Prepare the SQL query to select news items published after the start of the current week
+	$newsResult = $conn->prepare("SELECT Title, PubDate, Link FROM News WHERE CityName = ? AND PubDate >= ?
+	AND Title NOT LIKE '%football%'
+        AND Title NOT LIKE '%soccer%'
+        AND Title NOT LIKE '%league%'
+	AND Title NOT LIKE '%match%'
+	AND Title NOT LIKE '%FA Cup%'
+	AND Title NOT LIKE '%deal%'
+	AND Title NOT LIKE '%transfer%'
+	AND Title NOT LIKE '%team%'
+	AND Title NOT LIKE '%derby%'
+	AND Title NOT LIKE '%defender%'
+	AND Title NOT LIKE '%Euros%'
+	AND Title NOT LIKE '%fragrant%'
+	AND Title NOT LIKE '%fragrance%'
+	AND Title NOT LIKE '%buy%'
+	AND Title NOT LIKE '%eriksson%'
+	AND Title NOT LIKE '%euro%'
+	AND Title NOT LIKE '%thee%'
+	ORDER BY PubDate DESC");
+
+        $newsResult->bind_param("ss", $city, $startOfWeek);
         $newsResult->execute();
         $result = $newsResult->get_result();
 
