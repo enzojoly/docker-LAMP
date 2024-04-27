@@ -9,6 +9,7 @@ define('DB_NAME', 'twin_cities'); // Your database name
 define('GOOGLE_MAPS_API_KEY', ''); // Your Google Maps API key
 define('OPENWEATHERMAP_API_KEY', ''); // Your OpenWeatherMap API key
 define('NEWSAPI_API_KEY', ''); // Your NewsAPI API key
+define('FLICKR_API_KEY', ''); //Your Flickr API key
 
 ?>
 // Add other configuration settings or API keys as needed

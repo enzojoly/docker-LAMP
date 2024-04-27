@@ -102,7 +102,7 @@
         fclose($csvFile);
 
         // Save the XML to a file
-        $xml->asXML('../quotes.xml');
+        //$xml->asXML('../quotes.xml');
         ?>
 
         <!-- Category Selection Form -->

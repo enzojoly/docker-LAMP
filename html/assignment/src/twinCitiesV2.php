@@ -1,115 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Twin Cities</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            color: #333; text-align: center;
-	}
-	.forecast-container {
-            display: flex;
-            justify-content: space-between;
-            padding: 20px;
-            flex-wrap: wrap;
-            gap: 20px; /* This will create a gap between the two tables */
-            align-items: flex-start; /* Align tables to the top */
-        }
-
-        .forecast {
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin-bottom: 20px;
-            background-color: white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border-radius: 5px;
-            flex: 1; /* Each table will take up equal space */
-            max-width: calc(50% - 20px); /* Subtract the gap from the 50% width */
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed; /* This will prevent the table from expanding beyond its container */
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-            word-wrap: break-word; /* Ensures text wraps and doesn't overflow */
-	}
-	th {
-	    background-color: #f2f2f2;
-	}
-        .map-container {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
-	}
-
-        .map {
-            width: 47.5vw;
-            height: 40vw;
-            background-color: white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border-radius: 5px;
-	}
-
-        .explore-button {
-            margin-top: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-            color: #fff;
-            background-color: #007bff;
-            border: none;
-            border-radius: 5px; cursor: pointer;
-	}
-
-        .explore-button:hover {
-            background-color: #0056b3;
-	}
-
-        .info-bubble {
-            background-color: white;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            font-size: 14px;
-	}
-
-        .info-bubble h4 {
-            margin: 0;
-            font-size: 16px;
-            font-weight: normal;
-	}
-
-        .info-bubble strong {
-            font-weight: bold;
-	}
-
-        .info-bubble p {
-            margin: 5px 0;
-	}
-        .day-label {
-            background-color: #e7e7e7;
-            padding: 5px;
-            font-weight: bold;
-        }
-        a {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #333;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        a:hover {
-            background-color: #555;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
     <h1>Twin Cities - Liverpool and Cologne</h1>
@@ -126,6 +19,21 @@
             <button class="explore-button" onclick="zoomOutCologne()">Explore Köln</button>
         </div>
     </div>
+
+    <div class="photo-widget">
+        <h2>Liverpool Photos</h2>
+        <div class="center">
+            <div class="photo-gallery-liverpool"></div>
+        </div>
+    </div>
+
+    <div class="photo-widget">
+        <h2>Cologne Photos</h2>
+        <div class="center">
+            <div class="photo-gallery-cologne"></div>
+        </div>
+    </div>
+
 
 <?php
 	require_once 'config.php';
@@ -187,7 +95,7 @@
         var marker = new google.maps.Marker({
             position: {lat: parseFloat(place.Latitude), lng: parseFloat(place.Longitude)},
             map: mapToUse,
-            title: place.Name,
+            title: place.CityName,
             icon: place.IconURL
         });
 
@@ -197,7 +105,7 @@
                                 place.OpeningHours + '<br>' +
                                 '<p>' + place.Description + '</p>' +
                                 '<p>' + place.Latitude + ', ' + place.Longitude + '</p>' +
-                                '</div>';
+                                '<div class="photo-gallery"></div></div>';
 
         var infoBubble = new google.maps.InfoWindow({
 		content: infoBubbleContent
@@ -205,6 +113,7 @@
 
         marker.addListener('mouseover', function() {
         	infoBubble.open(mapToUse, marker);
+            fetchPhotos(place.Name, '.photo-gallery');
         });
 
         marker.addListener('mouseout', function() {
@@ -231,6 +140,35 @@
 		src="https://maps.googleapis.com/maps/api/js?key=<?php echo GOOGLE_MAPS_API_KEY; ?>&callback=initMap">
 	</script>
 
+<script>
+    // Function to fetch photos from Flickr API
+    function fetchPhotos(search, galleryContainer) {
+        const flickrAPIKey = '42d3cb2942390de4c077b4f76fb98968';
+        const flickrURL = `https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=${flickrAPIKey}&tags=${search}&format=json&nojsoncallback=1`;
+
+        fetch(flickrURL)
+            .then(response => response.json())
+            .then(data => {
+                const photos = data.photos.photo.slice(0, 8); // Limit to 8 photos
+                const photoGallery = document.querySelector(galleryContainer);
+                photoGallery.innerHTML = '';
+
+                photos.forEach(photo => {
+                    const photoURL = `https://farm${photo.farm}.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`;
+                    const img = document.createElement('img');
+                    img.src = photoURL;
+                    img.alt = photo.title;
+                    img.classList.add('gallery-img'); // Add class for styling
+                    photoGallery.appendChild(img);
+                });
+            })
+            .catch(error => console.error('Error fetching photos:', error));
+    }
+
+    // Call fetchPhotos function for each city
+    fetchPhotos('Liverpool', '.photo-gallery-liverpool');
+    fetchPhotos('Cologne', '.photo-gallery-cologne');
+</script>
 <!--
 	 Debugging: Print the variables
 	<div style="text-align: left; margin-top: 20px;">
@@ -282,6 +220,7 @@ function updateWeatherData($conn, $city, $appid) {
 	    $stmt->close();
 	}
 
+        
         // Only insert data for midday and midnight forecasts for rest of the week
         if ($hour === '12' || $hour === '00') {
             $stmt = $conn->prepare("INSERT INTO Weather (CityID, Temperature, Humidity, WindSpeed, `Condition`, Pressure, ForecastTime)
@@ -306,13 +245,14 @@ function displayWeatherForecasts($conn) {
     // Fetch all city names and their IDs
     $citiesResult = $conn->query("SELECT CityID, CityName FROM Cities ORDER BY CityID ASC");
 
+    echo "<div class='weatherContainer'>";
     // Iterate over each city and display its weather forecast
     while ($city = $citiesResult->fetch_assoc()) {
         $weatherResult = $conn->query("SELECT Temperature, Humidity, WindSpeed, `Condition`, Pressure, ForecastTime
                                        FROM Weather WHERE CityID = {$city['CityID']}");
 
-        echo "<h2>{$city['CityName']} Weather Forecast</h2>";
-        echo "<table border='1'>";
+        echo "<h2 class='{$city['CityName']}-weather-title'>{$city['CityName']} Weather Forecast</h2>";
+        echo "<table class='{$city['CityName']}-weather-table' border='1'>";
         echo "<tr><th>Date/Time</th><th>Condition</th><th>Temperature</th><th>Wind</th><th>Humidity</th><th>Pressure</th></tr>";
 
         // Iterate over each forecast entry and display it
@@ -328,6 +268,7 @@ function displayWeatherForecasts($conn) {
         }
         echo "</table><br>"; // Close the table and add a break for spacing
     }
+    echo "</div>";
 }
 
 // Establish a new database connection
@@ -382,18 +323,10 @@ function fetchNewsForCity($city, $apiKey) {
 
 function updateNewsData($conn, $city, $newsItems) {
     // Clear previous news for the city
-    // Delete news more than two weeks old from each News table
-    $twoWeeksAgo = date('Y-m-d', strtotime('-2 weeks'));
-    $deleteOldNewsStmt = $conn->prepare("DELETE FROM News WHERE CityName = ? AND PubDate < ?");
-    $deleteOldNewsStmt->bind_param("ss", $city, $twoWeeksAgo);
-    $deleteOldNewsStmt->execute();
-    $deleteOldNewsStmt->close();
-
-    //Ensure no duplicate articles within 2 weeks
-    $lastTwoWeeksStmt = $conn->prepare("DELETE FROM News WHERE CityName = ? AND PubDate >= ?");
-    $lastTwoWeeksStmt->bind_param("ss", $city, $twoWeeksAgo);
-    $lastTwoWeeksStmt->execute();
-    $lastTwoWeeksStmt->close();
+    $deleteStmt = $conn->prepare("DELETE FROM News WHERE CityName = ?");
+    $deleteStmt->bind_param("s", $city);
+    $deleteStmt->execute();
+    $deleteStmt->close();
 
     foreach ($newsItems as $item) {
         // Convert date to MySQL datetime format
@@ -409,47 +342,27 @@ function updateNewsData($conn, $city, $newsItems) {
 
 function displayNews($conn) {
     $cities = ['Liverpool', 'Cologne'];
+    echo "<div class='newsContainer'>";
     foreach ($cities as $city) {
-        // Get the start date of the current week
-        $startOfWeek = date('Y-m-d', strtotime('monday last week'));
-
-        // Prepare the SQL query to select news items published after the start of the current week
-	$newsResult = $conn->prepare("SELECT Title, PubDate, Link FROM News WHERE CityName = ? AND PubDate >= ?
-	AND Title NOT LIKE '%football%'
-        AND Title NOT LIKE '%soccer%'
-        AND Title NOT LIKE '%league%'
-	AND Title NOT LIKE '%match%'
-	AND Title NOT LIKE '%FA Cup%'
-	AND Title NOT LIKE '%deal%'
-	AND Title NOT LIKE '%transfer%'
-	AND Title NOT LIKE '%team%'
-	AND Title NOT LIKE '%derby%'
-	AND Title NOT LIKE '%defender%'
-	AND Title NOT LIKE '%Euros%'
-	AND Title NOT LIKE '%fragrant%'
-	AND Title NOT LIKE '%fragrance%'
-	AND Title NOT LIKE '%buy%'
-	AND Title NOT LIKE '%eriksson%'
-	AND Title NOT LIKE '%euro%'
-	AND Title NOT LIKE '%thee%'
-	ORDER BY PubDate DESC");
-
-        $newsResult->bind_param("ss", $city, $startOfWeek);
+        $newsResult = $conn->prepare("SELECT Title, PubDate, Link FROM News WHERE CityName = ? ORDER BY PubDate DESC LIMIT 10");
+        $newsResult->bind_param("s", $city);
         $newsResult->execute();
         $result = $newsResult->get_result();
-
+        echo "<div class='{$city}news'>";
         echo "<h2>{$city} News</h2>";
-        echo "<table border='1'><tr><th>Title</th><th>Date</th><th>Link</th></tr>";
+        echo "<table>";
         while ($row = $result->fetch_assoc()) {
             echo "<tr>";
-            echo "<td>" . htmlspecialchars($row['Title']) . "</td>";
-            echo "<td>" . htmlspecialchars($row['PubDate']) . "</td>";
-            echo "<td><a href='" . htmlspecialchars($row['Link']) . "'>Read more</a></td>";
+            echo "<strong>" . htmlspecialchars($row['Title']) . "</strong><br>";
+            echo "<li>" . htmlspecialchars($row['PubDate']) . "</li>";
+            echo "<li><a href='" . htmlspecialchars($row['Link']) . "'>Read more</a></li>";
             echo "</tr>";
         }
         echo "</table><br>";
+        echo "</div>";
         $newsResult->close();
     }
+    echo "</div>";
 }
 
 // Fetch news for each city
@@ -468,144 +381,7 @@ $conn->close();
 
 ?>
 
-<?php
-require_once 'config.php';
-
-// Create a new PDO instance
-$pdo = new PDO("mysql:host=" . DB_SERVER . ";dbname=" . DB_NAME, DB_USERNAME, DB_PASSWORD);
-
-// Fetch data from the database
-$stmt = $pdo->query("SELECT * FROM Cities");
-$cities = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$stmt = $pdo->query("SELECT * FROM Places_of_Interest");
-$placesOfInterest = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$stmt = $pdo->query("SELECT * FROM Category");
-$categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$stmt = $pdo->query("SELECT * FROM Currency");
-$currencies = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$stmt = $pdo->query("SELECT * FROM Place_Category");
-$placeCategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$stmt = $pdo->query("SELECT * FROM News");
-$news = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$stmt = $pdo->query("SELECT * FROM Weather");
-$weather = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Create a new DOMDocument
-$doc = new DOMDocument('1.0', 'UTF-8');
-
-// Create the root element
-$root = $doc->createElement('TwinCitiesInformation');
-$doc->appendChild($root);
-
-// Create the Cities element and its children
-$citiesElement = $doc->createElement('Cities');
-foreach ($cities as $city) {
-    $cityElement = $doc->createElement('City');
-    foreach ($city as $key => $value) {
-        if ($value !== null) {
-            $element = $doc->createElement($key, $value);
-            $cityElement->appendChild($element);
-        }
-    }
-    $citiesElement->appendChild($cityElement);
-}
-$root->appendChild($citiesElement);
-
-// Create the PlacesOfInterest element and its children
-$placesOfInterestElement = $doc->createElement('PlacesOfInterest');
-foreach ($placesOfInterest as $place) {
-    $placeElement = $doc->createElement('PlaceOfInterest');
-    foreach ($place as $key => $value) {
-        if ($value !== null) {
-            $element = $doc->createElement($key, $value);
-            $placeElement->appendChild($element);
-        }
-    }
-    $placesOfInterestElement->appendChild($placeElement);
-}
-$root->appendChild($placesOfInterestElement);
-
-// Create the Categories element and its children
-$categoriesElement = $doc->createElement('Categories');
-foreach ($categories as $category) {
-    $categoryElement = $doc->createElement('Category');
-    foreach ($category as $key => $value) {
-        if ($value !== null) {
-            $element = $doc->createElement($key, $value);
-            $categoryElement->appendChild($element);
-        }
-    }
-    $categoriesElement->appendChild($categoryElement);
-}
-$root->appendChild($categoriesElement);
-
-// Create the Currencies element and its children
-$currenciesElement = $doc->createElement('Currencies');
-foreach ($currencies as $currency) {
-    $currencyElement = $doc->createElement('Currency');
-    foreach ($currency as $key => $value) {
-        if ($value !== null) {
-            $element = $doc->createElement($key, $value);
-            $currencyElement->appendChild($element);
-        }
-    }
-    $currenciesElement->appendChild($currencyElement);
-}
-$root->appendChild($currenciesElement);
-
-// Create the PlaceCategories element and its children
-$placeCategoriesElement = $doc->createElement('PlaceCategories');
-foreach ($placeCategories as $placeCategory) {
-    $placeCategoryElement = $doc->createElement('PlaceCategory');
-    foreach ($placeCategory as $key => $value) {
-        if ($value !== null) {
-            $element = $doc->createElement($key, $value);
-            $placeCategoryElement->appendChild($element);
-        }
-    }
-    $placeCategoriesElement->appendChild($placeCategoryElement);
-}
-$root->appendChild($placeCategoriesElement);
-
-// Create the News element and its children
-$newsElement = $doc->createElement('News');
-foreach ($news as $newsItem) {
-    $newsItemElement = $doc->createElement('NewsItem');
-    foreach ($newsItem as $key => $value) {
-        if ($value !== null) {
-            $element = $doc->createElement($key, htmlspecialchars($value));
-            $newsItemElement->appendChild($element);
-        }
-    }
-    $newsElement->appendChild($newsItemElement);
-}
-$root->appendChild($newsElement);
-
-// Create the Weather element and its children
-$weatherElement = $doc->createElement('Weather');
-foreach ($weather as $weatherForecast) {
-    $weatherForecastElement = $doc->createElement('WeatherForecast');
-    foreach ($weatherForecast as $key => $value) {
-        if ($value !== null) {
-            $element = $doc->createElement($key, $value);
-            $weatherForecastElement->appendChild($element);
-        }
-    }
-    $weatherElement->appendChild($weatherForecastElement);
-}
-$root->appendChild($weatherElement);
-
-// Save the XML to a file
-$filePath = './generated-xml/twin_cities_information.xml';
-$doc->save($filePath);
-
-?>
 
 </body>
 </html>
+

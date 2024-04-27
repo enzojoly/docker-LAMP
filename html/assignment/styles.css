@@ -1,0 +1,353 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    text-align: center;
+    padding-top: 2em;
+}
+
+div.weatherContainer, div.newsContainer {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto, 1fr;
+        grid-gap: 8vw;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 1.5rem;
+        width: 95vw;
+        margin: 2em auto;
+}
+.Liverpoolnews{
+    grid-column: 1;
+}
+.Colognenews{
+    grid-column: 2;
+}
+.center{
+    justify-content: center;
+    align-items: center;
+}
+.Liverpool-weather-title{
+    text-align: center;
+    grid-column: 1; 
+    grid-row: 1; 
+    font-size: 24px;
+    align-self: start;
+    margin-bottom: 0;
+    
+}
+.Cologne-weather-title{
+    text-align: center;
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 24px;
+    align-self: start;
+    margin-bottom: 0;
+}
+
+.Liverpool-weather-table{
+    grid-column: 1; 
+    grid-row: 2; 
+    width: 100%;
+    max-height:2rem;
+    border-radius: 16px;
+    border-collapse: collapse;
+    table-layout: fixed; /* This will prevent the table from expanding beyond its container */
+}
+
+.Cologne-weather-table{
+    grid-column: 2; 
+    grid-row: 2; 
+    width: 100%;
+    max-height:2rem;
+    border-collapse: collapse;
+    table-layout: fixed; /* This will prevent the table from expanding beyond its container */
+}
+
+tbody{
+    border-radius: 16px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    word-wrap: break-word; /* Ensures text wraps and doesn't overflow */
+}
+th {
+background-color: #f2f2f2;
+}
+
+.explore-button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px; cursor: pointer;
+}
+
+.explore-button:hover {
+    background-color: #0056b3;
+}
+
+.info-bubble {
+    background-color: white;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    font-size: 14px;
+}
+
+.info-bubble h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: normal;
+}
+
+.info-bubble strong {
+    font-weight: bold;
+}
+
+.info-bubble p {
+    margin: 5px 0;
+}
+.day-label {
+    background-color: #e7e7e7;
+    padding: 5px;
+    font-weight: bold;
+}
+a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #f9f9f9;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+}
+table, a:hover {
+    border-color: #448ee3;
+}
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f7f7f7;
+    color: #333;
+}
+
+h1 {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 36px;
+}
+
+.map-container {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.map {
+    width: 47.5vw;
+    height:40vw;
+    background-color: white;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+    
+}
+
+.explore-button {
+    display: block;
+    max-width: 15rem;
+    padding: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    margin: 0 auto;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: center;
+}
+
+.explore-button:hover {
+    background-color: #0056b3;
+}
+
+
+h2 {
+    font-size: 24px;
+    margin-top: 40px;
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    text-align: left;
+}
+
+th {
+    background-color: #007bff;
+    color: #fff;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+li{
+    list-style-type: none;
+}
+.photo-gallery img, .photo-gallery-liverpool img, .photo-gallery-cologne img{
+    width: 100px; 
+    height: 100px; 
+    object-fit: cover;
+    margin: 5px;
+    justify-self: center;
+}
+
+
+/* media queries for mobile 
+*/
+@media (max-width: 800px) {
+    /* Adjust the grid template columns and rows to display in a single column */
+  
+    /* Center-align the title elements */
+    .Liverpool-weather-title, .Cologne-weather-title {
+      justify-self: center;
+    }
+  
+    /* Adjust the width and margin of the explore button */
+    .explore-button {
+      max-width: 100%; /* Ensure the button takes full width */
+      margin: 0 auto 1em; /* Adjust margin for better spacing */
+    }
+  
+    /* Adjust the font size of h1 and h2 for better readability on mobile */
+    h1, h2 {
+      font-size: 24px;
+    }
+  
+    /* Adjust the font size of table cells for better readability on mobile */
+    th, td {
+      font-size: 14px;
+    }
+
+    .map-container{
+        flex-direction: column;
+    }
+    .map{
+        width: 90vw;
+        height: 50vh;
+        margin: 0 auto 1em;
+    }
+    div.weatherContainer {
+        display: flex;
+        flex-direction: column;
+        width: 95%; /* Adjust the width for better fit on mobile screens */
+        margin: 2em auto;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 3px;
+        text-align: left;
+        font-size: small;
+        word-wrap: break-word; /* Ensures text wraps and doesn't overflow */
+    }
+    div.weatherContainer, div.newsContainer {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        grid-template-rows: auto, 1fr;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 1.5rem;
+        width: 85vw;
+        margin: 2em auto;
+    }
+    .Liverpool-weather-title{
+        text-align: center;
+        grid-column: 1; 
+        grid-row: 1; 
+        font-size: 24px;
+        align-self: center;
+        margin-bottom: 0;
+        
+    }
+    .Cologne-weather-title{
+        text-align: center;
+        grid-column: 1;
+        grid-row: 3;
+        font-size: 24px;
+        align-self: center;
+        margin-bottom: 0;
+    }
+    
+    .Liverpool-weather-table{
+        grid-column: 1; 
+        grid-row: 2; 
+        width: 100%;
+        margin: 0 auto;
+        border-radius: 16px;
+        border-collapse: collapse;
+        table-layout: fixed; /* This will prevent the table from expanding beyond its container */
+    }
+    
+    .Cologne-weather-table{
+        grid-column: 1; 
+        grid-row: 4; 
+        width: 100%;
+        margin: 0 auto;
+        border-collapse: collapse;
+        table-layout: fixed; /* This will prevent the table from expanding beyond its container */
+    }
+    .Liverpoolnews{
+        grid-column: 1 / span 2;
+        grid-row: 1;
+        width: 100%;
+    }
+    .Colognenews{
+        grid-column: 1 / span 2;
+        grid-row: 2;
+        width: 100%;
+    }
+    .photo-gallery img {
+        width: 50px; 
+        height: 50px; 
+        object-fit: cover;
+        margin: 5px;
+    }
+    .photo-gallery-liverpool, .photo-gallery-cologne {
+        display: grid;
+        margin: 0 3em;
+        grid-template-columns: repeat(4, 1fr); /* 4 columns */
+        grid-template-rows: repeat(2, auto); /* 2 rows */
+        grid-gap: 10px; /* Adjust the gap between grid items */
+    }
+    
+    .photo-gallery-liverpool img, .photo-gallery-cologne img{
+        width: 100px;
+        height: 100px;
+        margin: 0px;
+    }
+}
